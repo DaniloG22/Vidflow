@@ -5,6 +5,7 @@ const lauraPersonaReplies = [
   { match: ['cian', 'color', 'tono'], name: 'Laura', text: 'El cian me da una sensación muy alegre y clara.' },
   { match: ['animacion', 'fluido'], name: 'Laura', text: 'Las transiciones hacen que todo se vea más fluido.' },
   { match: ['gracias', 'genial'], name: 'Laura', text: '¡Perfecto! Me gusta cómo queda este espacio.' },
+  { match: ['foto', 'imagen', 'camara'], name: 'Laura', text: '¡Qué bonita foto! Me encanta ver cómo se siente tu mundo en esta conversación.' },
 ];
 
 const lauraStarterMessages = [

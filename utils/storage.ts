@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 
 const webStorage = typeof window !== 'undefined' ? window.localStorage : null;
 const storageKey = (chatId: string) => `@chat_${chatId}`;
+const chatPrefix = '@chat_';
 
 export const saveMessages = async (chatId: string, messages: any[]) => {
   try {
@@ -33,5 +34,25 @@ export const loadMessages = async (chatId: string) => {
   } catch (e) {
     console.error("Error cargando mensajes", e);
     return [];
+  }
+};
+
+export const clearAllChatData = async () => {
+  try {
+    if (Platform.OS === 'web' && webStorage) {
+      Object.keys(webStorage)
+        .filter((key) => key.startsWith(chatPrefix))
+        .forEach((key) => webStorage.removeItem(key));
+      return;
+    }
+
+    const keys = await AsyncStorage.getAllKeys();
+    const chatKeys = keys.filter((key) => key.startsWith(chatPrefix));
+
+    if (chatKeys.length > 0) {
+      await AsyncStorage.multiRemove(chatKeys);
+    }
+  } catch (e) {
+    console.error("Error limpiando chats", e);
   }
 };

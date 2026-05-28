@@ -1,12 +1,12 @@
 import ChatConversation from '../components/ChatConversation';
 
 const generalPersonaReplies = [
-  { match: ['hola', 'buenos', 'inicio'], name: 'John', text: '¡Hola! Soy John y comienzo esta charla con energía.' },
-  { match: ['cian', 'color', 'tono'], name: 'Camila', text: 'El tono cian me hace sentir la conversación más fresca y clara.' },
-  { match: ['animacion', 'fluido', 'suave'], name: 'Laura', text: 'Me encanta cómo se siente fluido todo el chat con estos movimientos.' },
-  { match: ['cámara', 'foto', 'camara'], name: 'Carlos', text: 'Si usas la cámara, la conversación se vuelve mucho más dinámica.' },
-  { match: ['perfil', 'mi perfil', 'nombre'], name: 'Sofía', text: 'A mí me gusta que se vea más personal y menos robotizado.' },
-  { match: ['gracias', 'genial', 'cool'], name: 'Pablo', text: '¡Genial! Este chat de personas tiene una vibra muy natural.' },
+  { match: ['hola', 'buenos', 'inicio'], name: 'asistente', text: '¡Hola! Soy el asistente y comienzo esta charla con energía.' },
+  { match: ['cian', 'color', 'tono'], name: 'asistente', text: 'El tono cian me hace sentir la conversación más fresca y clara.' },
+  { match: ['animacion', 'fluido', 'suave'], name: 'asistente', text: 'Me encanta cómo se siente fluido todo el chat con estos movimientos.' },
+  { match: ['cámara', 'foto', 'camara'], name: 'asistente', text: 'Si usas la cámara, la conversación se vuelve mucho más dinámica.' },
+  { match: ['perfil', 'mi perfil', 'nombre'], name: 'asistente', text: 'A mí me gusta que se vea más personal y menos robotizado.' },
+  { match: ['gracias', 'genial', 'cool'], name: 'asistente', text: '¡Genial! Este chat de personas tiene una vibra muy natural.' },
 ];
 
 const generalStarterMessages = [

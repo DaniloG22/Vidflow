@@ -31,9 +31,12 @@ export default function CameraScreen() {
   const takePicture = async () => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
-      
+      const returnPath = Array.isArray(params?.from) ? params.from[0] : (typeof params?.from === 'string' ? params.from : '/');
+
       if (params?.from === 'profile') {
         router.replace({ pathname: '/profile', params: { photoUri: photo.uri } });
+      } else if (typeof returnPath === 'string' && returnPath.startsWith('/')) {
+        router.replace({ pathname: returnPath, params: { chatPhotoUri: photo.uri } });
       } else {
         router.replace({ pathname: '/', params: { chatPhotoUri: photo.uri } });
       }
