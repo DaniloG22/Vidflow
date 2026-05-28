@@ -2,7 +2,62 @@ import { useEffect, useState } from 'react';
 import { View, Image, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
+import { DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+
+function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const chatItems = [
+    { name: 'index', title: 'Asistente', icon: 'chatbubbles-outline' },
+    { name: 'john', title: 'John', icon: 'person-outline' },
+    { name: 'laura', title: 'Laura', icon: 'person-outline' },
+    { name: 'camila', title: 'Camila', icon: 'person-outline' },
+  ];
+
+  const accountItems = [
+    { name: 'profile', title: 'Perfil', icon: 'person-circle-outline' },
+    { name: 'settings', title: 'Ajustes', icon: 'settings-outline' },
+  ];
+
+  return (
+    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContentScrollView}>
+      <View style={styles.drawerHeader}>
+        <Image source={require('../assets/icono.png')} style={styles.drawerLogo} resizeMode="contain" />
+        <View>
+          <Text style={styles.drawerAppName}>VidFlow</Text>
+          <Text style={styles.drawerAppSubtitle}>Conversaciones</Text>
+        </View>
+      </View>
+
+      <View style={styles.drawerDivider} />
+
+      <Text style={styles.drawerSectionTitle}>Chats</Text>
+      {chatItems.map((item) => (
+        <DrawerItem
+          key={item.name}
+          label={item.title}
+          onPress={() => props.navigation.navigate(item.name)}
+          icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
+          style={styles.drawerItem}
+        />
+      ))}
+
+      <View style={styles.drawerAccountSection}>
+        <View style={styles.drawerSectionDivider} />
+
+        <Text style={styles.drawerSectionTitle}>Cuenta</Text>
+        {accountItems.map((item) => (
+          <DrawerItem
+            key={item.name}
+            label={item.title}
+            onPress={() => props.navigation.navigate(item.name)}
+            icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
+            style={styles.drawerItem}
+          />
+        ))}
+      </View>
+    </DrawerContentScrollView>
+  );
+}
 
 export default function Layout() {
   const [isBooting, setIsBooting] = useState(true);
@@ -25,6 +80,7 @@ export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
         screenOptions={{
           drawerStyle: { backgroundColor: '#ffffff', width: 250 },
           headerTintColor: '#0891b2',
@@ -34,6 +90,8 @@ export default function Layout() {
         <Drawer.Screen name="john" options={{ title: 'John', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
         <Drawer.Screen name="laura" options={{ title: 'Laura', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
         <Drawer.Screen name="camila" options={{ title: 'Camila', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
+        <Drawer.Screen name="profile" options={{ title: 'Perfil', drawerIcon: () => <Ionicons name="person-circle-outline" size={22} color="#0891b2" /> }} />
+        <Drawer.Screen name="settings" options={{ title: 'Ajustes', drawerIcon: () => <Ionicons name="settings-outline" size={22} color="#0891b2" /> }} />
         <Drawer.Screen name="camera" options={{ title: 'Cámara', drawerItemStyle: { display: 'none' } }} />
       </Drawer>
     </GestureHandlerRootView>
@@ -62,22 +120,62 @@ const styles = StyleSheet.create({
   loader: {
     marginTop: 10,
   },
+  drawerContentScrollView: {
+    paddingTop: 12,
+    flexGrow: 1,
+  },
   drawerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 20,
-    paddingBottom: 8,
+    paddingBottom: 12,
     gap: 12,
   },
   drawerLogo: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
   },
   drawerAppName: {
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0891b2',
+  },
+  drawerAppSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  drawerDivider: {
+    height: 1,
+    backgroundColor: '#d0f2ff',
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  drawerSectionTitle: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    marginBottom: 4,
+    fontSize: 11,
     fontWeight: '700',
     color: '#0891b2',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  drawerAccountSection: {
+    marginTop: 'auto',
+  },
+  drawerSectionDivider: {
+    height: 1,
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 16,
+    marginVertical: 10,
+  },
+  drawerItem: {
+    marginHorizontal: 8,
+    borderRadius: 10,
   },
   drawerHeaderSpacer: {
     height: 12,
