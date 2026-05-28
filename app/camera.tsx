@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useState, useRef } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,6 +9,14 @@ export default function CameraScreen() {
   const params = useLocalSearchParams();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.center}>
+        <Text style={{ marginBottom: 15 }}>La cámara no está disponible en la versión web.</Text>
+      </View>
+    );
+  }
 
   if (!permission) return <View />;
   if (!permission.granted) {

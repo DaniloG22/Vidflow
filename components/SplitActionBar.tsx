@@ -44,7 +44,7 @@ export default function SplitActionBar({ onSendMessage, onCameraPress }: SplitAc
 
       <View style={styles.inputBar}>
         <TouchableOpacity onPress={toggleMenu} style={styles.iconButton}>
-          <Ionicons name={showMenu ? "close" : "add"} size={26} color="#128C7E" />
+          <Ionicons name={showMenu ? "close" : "add"} size={26} color="#0891b2" />
         </TouchableOpacity>
         
         <TextInput
@@ -66,11 +66,11 @@ export default function SplitActionBar({ onSendMessage, onCameraPress }: SplitAc
 }
 
 const styles = StyleSheet.create({
-  container: { position: 'relative', bottom: 0, width: '100%', padding: 10, backgroundColor: '#f7f9fa' },
-  inputBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 25, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#e0e0e0' },
-  input: { flex: 1, height: 40, paddingHorizontal: 10 },
+  container: { position: 'relative', bottom: 0, width: '100%', padding: 10, backgroundColor: '#dcfbfe' },
+  inputBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f6ffff', borderRadius: 25, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: '#b0f0f9' },
+  input: { flex: 1, height: 40, paddingHorizontal: 10, color: '#065f73' },
   iconButton: { padding: 5 },
-  sendButton: { backgroundColor: '#128C7E', borderRadius: 20, padding: 8, marginLeft: 5 },
-  actionMenu: { flexDirection: 'row', position: 'absolute', bottom: 70, left: 20, backgroundColor: '#128C7E', borderRadius: 20, padding: 10, gap: 15, zIndex: 10 },
-  menuButton: { backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: 50 }
+  sendButton: { backgroundColor: '#0891b2', borderRadius: 20, padding: 8, marginLeft: 5 },
+  actionMenu: { flexDirection: 'row', position: 'absolute', bottom: 70, left: 20, backgroundColor: '#0891b2', borderRadius: 20, padding: 10, gap: 15, zIndex: 10 },
+  menuButton: { backgroundColor: 'rgba(255,255,255,0.24)', padding: 10, borderRadius: 50 }
 });
