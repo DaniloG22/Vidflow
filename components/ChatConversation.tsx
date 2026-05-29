@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import SplitActionBar from './SplitActionBar';
 import TypingIndicator from './TypingIndicator';
+import { useTheme } from '../utils/theme';
 
 export interface ChatMessage {
   id: string;
@@ -27,6 +28,7 @@ interface ChatConversationProps {
 }
 
 export default function ChatConversation({ chatId, starterMessages, personaReplies }: ChatConversationProps) {
+  const { theme } = useTheme(); // Obtenemos el tema dinámico
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useLocalSearchParams();
@@ -36,13 +38,13 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
 
   const storageKey = `@chat_${chatId}_v2`;
 
+  // ... (Tus funciones loadStoredMessages y saveStoredMessages se quedan igual)
   const loadStoredMessages = async () => {
     try {
       if (Platform.OS === 'web') {
         const jsonValue = window.localStorage.getItem(storageKey);
         return jsonValue != null ? JSON.parse(jsonValue) : [];
       }
-
       const jsonValue = await AsyncStorage.getItem(storageKey);
       return jsonValue != null ? JSON.parse(jsonValue) : [];
     } catch (e) {
@@ -57,7 +59,6 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
         window.localStorage.setItem(storageKey, JSON.stringify(nextMessages));
         return;
       }
-
       await AsyncStorage.setItem(storageKey, JSON.stringify(nextMessages));
     } catch (e) {
       console.error('Error guardando mensajes', e);
@@ -75,7 +76,6 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
         await saveStoredMessages(seededMessages);
       }
     };
-
     fetchMessages();
   }, []);
 
@@ -85,7 +85,6 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
       const userMessage = currentMessages[currentMessages.length - 1].text.toLowerCase();
       const matchedPersona = personaReplies.find((persona) => persona.match.some((keyword) => userMessage.includes(keyword))) || personaReplies[Math.floor(Math.random() * personaReplies.length)];
       const aiText = `Soy ${matchedPersona.name}: ${matchedPersona.text}`;
-
       const aiMessage: ChatMessage = { id: `ai_${Date.now()}`, text: aiText, sender: 'ai', timestamp: Date.now() };
       const updatedHistory = [...currentMessages, aiMessage];
       setMessages(updatedHistory);
@@ -97,7 +96,6 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
   const handleSendMessage = async (text: string, imageUri?: string) => {
     const trimmedText = text.trim();
     if (!trimmedText && !imageUri) return;
-
     setMessages((currentMessages) => {
       const newUserMessage: ChatMessage = {
         id: `user_${Date.now()}`,
@@ -107,25 +105,21 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
         imageUri,
       };
       const updatedMessages = [...currentMessages, newUserMessage];
-
       void saveStoredMessages(updatedMessages);
       void handleAIResponse(updatedMessages);
-
       return updatedMessages;
     });
   };
 
   useEffect(() => {
     const photoUri = Array.isArray(searchParams.chatPhotoUri) ? searchParams.chatPhotoUri[0] : searchParams.chatPhotoUri;
-
     if (!photoUri) return;
-
     void handleSendMessage('Foto enviada', photoUri);
     router.setParams({ chatPhotoUri: undefined });
   }, [searchParams.chatPhotoUri]);
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={90} style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={90} style={[styles.container, { backgroundColor: theme.background }]}>
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -135,9 +129,16 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
         renderItem={({ item }) => {
           const isUser = item.sender === 'user';
           return (
-            <Animated.View entering={isUser ? FadeInRight.springify() : FadeInLeft.springify()} style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}>
+            <Animated.View 
+              entering={isUser ? FadeInRight.springify() : FadeInLeft.springify()} 
+              style={[
+                styles.bubble, 
+                { backgroundColor: theme.cian}, 
+                isUser ? styles.userBubble : styles.aiBubble
+              ]}
+            >
               {item.imageUri ? <Image source={{ uri: item.imageUri }} style={styles.messageImage} resizeMode="cover" /> : null}
-              {item.text ? <Text style={isUser ? styles.userText : styles.aiText}>{item.text}</Text> : null}
+              {item.text ? <Text style={styles.bubbleText}>{item.text}</Text> : null}
             </Animated.View>
           );
         }}
@@ -149,12 +150,20 @@ export default function ChatConversation({ chatId, starterMessages, personaRepli
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1 },
   messagesList: { paddingHorizontal: 15, paddingVertical: 20, gap: 12 },
-  bubble: { maxWidth: '80%', padding: 12, borderRadius: 18, shadowColor: '#0891b2', shadowOpacity: 0.16, shadowRadius: 3, elevation: 2, overflow: 'hidden' },
-  userBubble: { backgroundColor: '#0891b2', alignSelf: 'flex-end', borderBottomRightRadius: 2 },
-  aiBubble: { backgroundColor: '#e0fbff', alignSelf: 'flex-start', borderBottomLeftRadius: 2 },
+  bubble: { 
+    maxWidth: '80%', 
+    padding: 12, 
+    borderRadius: 18, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.1, 
+    shadowRadius: 3, 
+    elevation: 2, 
+    overflow: 'hidden' 
+  },
+  userBubble: { alignSelf: 'flex-end', borderBottomRightRadius: 2 },
+  aiBubble: { alignSelf: 'flex-start', borderBottomLeftRadius: 2 },
   messageImage: { width: 220, height: 220, borderRadius: 12, marginBottom: 8, alignSelf: 'center' },
-  userText: { color: '#fff', fontSize: 16 },
-  aiText: { color: '#065f73', fontSize: 16 },
+  bubbleText: { color: '#ffffff', fontSize: 16 }, // Texto siempre blanco para contraste
 });

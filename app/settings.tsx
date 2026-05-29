@@ -1,22 +1,22 @@
-    import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, Switch, StyleSheet } from 'react-native';
+import { useTheme } from '../utils/theme';
 
 export default function SettingsScreen() {
+  const { isDarkMode, toggleTheme, theme } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="settings-outline" size={28} color="#0891b2" />
-        <Text style={styles.title}>Ajustes</Text>
-      </View>
-      <Text style={styles.subtitle}>Espacio de ajustes disponible.</Text>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.text, { color: theme.text }]}>Modo Oscuro</Text>
+      <Switch
+        value={isDarkMode}
+        onValueChange={toggleTheme}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff', padding: 20 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
-  title: { fontSize: 22, fontWeight: '700', color: '#0891b2' },
-  subtitle: { fontSize: 16, color: '#065f73' },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  text: { fontSize: 18, marginBottom: 10 }
 });

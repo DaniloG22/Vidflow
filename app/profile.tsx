@@ -4,8 +4,11 @@ import Animated, { FadeInDown, FadeInUp, useSharedValue, useAnimatedStyle, withS
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useTheme } from '../utils/theme';
+
 
 export default function ProfileScreen() {
+  const { theme } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   
@@ -14,6 +17,7 @@ export default function ProfileScreen() {
   const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
   const buttonScale = useSharedValue(1);
 
+  
   useEffect(() => {
     const loadProfileData = async () => {
       const savedName = await AsyncStorage.getItem('@profile_name');
@@ -47,7 +51,7 @@ export default function ProfileScreen() {
   const animatedButtonStyle = useAnimatedStyle(() => ({ transform: [{ scale: buttonScale.value }] }));
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View entering={FadeInUp.delay(100)} style={styles.avatarContainer}>
         <Image source={{ uri: avatar }} style={styles.avatar} />
         <TouchableOpacity style={styles.changePictureButton} onPress={() => router.push({ pathname: '/camera', params: { from: 'profile' } })}>
@@ -75,7 +79,11 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </Animated.View>
     </View>
+
+    
+
   );
+    
 }
 
 const styles = StyleSheet.create({

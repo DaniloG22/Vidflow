@@ -4,8 +4,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import { ThemeProvider, useTheme } from '../utils/theme';
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const { theme } = useTheme();
+
   const chatItems = [
     { name: 'index', title: 'Asistente', icon: 'chatbubbles-outline' },
     { name: 'john', title: 'John', icon: 'person-outline' },
@@ -19,43 +22,69 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   ];
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContentScrollView}>
+    <DrawerContentScrollView {...props} contentContainerStyle={[styles.drawerContentScrollView, { backgroundColor: theme.drawerBackground }]}>
       <View style={styles.drawerHeader}>
         <Image source={require('../assets/icono.png')} style={styles.drawerLogo} resizeMode="contain" />
         <View>
-          <Text style={styles.drawerAppName}>VidFlow</Text>
+          <Text style={[styles.drawerAppName, { color: theme.text }]}>VidFlow</Text>
           <Text style={styles.drawerAppSubtitle}>Conversaciones</Text>
         </View>
       </View>
 
-      <View style={styles.drawerDivider} />
+      <View style={[styles.drawerDivider, { backgroundColor: theme.drawerBackground }]} />
 
-      <Text style={styles.drawerSectionTitle}>Chats</Text>
+      <Text style={[styles.drawerSectionTitle, { color: theme.background }]}>Chats</Text>
       {chatItems.map((item) => (
         <DrawerItem
           key={item.name}
           label={item.title}
-          onPress={() => props.navigation.navigate(item.name)}
-          icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
+          labelStyle={{ color: theme.text }}
+          onPress={() => props.navigation.navigate(item.name as any)}
+          icon={({ size }) => <Ionicons name={item.icon as any} size={size} color="#0891b2" />}
           style={styles.drawerItem}
         />
       ))}
 
       <View style={styles.drawerAccountSection}>
-        <View style={styles.drawerSectionDivider} />
-
-        <Text style={styles.drawerSectionTitle}>Cuenta</Text>
+        <View style={[styles.drawerSectionDivider, { backgroundColor: theme.drawerBackground }]} />
+        <Text style={[styles.drawerSectionTitle, { color: theme.background }]}>Cuenta</Text>
         {accountItems.map((item) => (
           <DrawerItem
             key={item.name}
             label={item.title}
-            onPress={() => props.navigation.navigate(item.name)}
-            icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
+            labelStyle={{ color: theme.text }}
+            onPress={() => props.navigation.navigate(item.name as any)}
+            icon={({ size }) => <Ionicons name={item.icon as any} size={size} color="#0891b2" />}
             style={styles.drawerItem}
           />
         ))}
       </View>
     </DrawerContentScrollView>
+  );
+}
+
+function DrawerNavigator() {
+  const { theme } = useTheme();
+
+  return (
+    <Drawer
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      // MUEVE TODO AQUÍ ADENTRO:
+      screenOptions={{
+  headerStyle: { backgroundColor: theme.background },
+  headerTintColor: theme.text,
+  headerTitleStyle: { color: theme.text },
+  drawerStyle: { backgroundColor: theme.drawerBackground, width: 250 },
+}}
+    >
+      <Drawer.Screen name="index" options={{ title: 'Asistente' }} />
+      <Drawer.Screen name="john" options={{ title: 'John' }} />
+      <Drawer.Screen name="laura" options={{ title: 'Laura' }} />
+      <Drawer.Screen name="camila" options={{ title: 'Camila' }} />
+      <Drawer.Screen name="profile" options={{ title: 'Perfil' }} />
+      <Drawer.Screen name="settings" options={{ title: 'Ajustes' }} />
+      <Drawer.Screen name="camera" options={{ title: 'Cámara', drawerItemStyle: { display: 'none' } }} />
+    </Drawer>
   );
 }
 
@@ -78,106 +107,27 @@ export default function Layout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Drawer
-        drawerContent={(props) => <CustomDrawerContent {...props} />}
-        screenOptions={{
-          drawerStyle: { backgroundColor: '#ffffff', width: 250 },
-          headerTintColor: '#0891b2',
-        }}
-      >
-        <Drawer.Screen name="index" options={{ title: 'Asistente', drawerIcon: () => <Ionicons name="chatbubbles-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="john" options={{ title: 'John', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="laura" options={{ title: 'Laura', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="camila" options={{ title: 'Camila', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="profile" options={{ title: 'Perfil', drawerIcon: () => <Ionicons name="person-circle-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="settings" options={{ title: 'Ajustes', drawerIcon: () => <Ionicons name="settings-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="camera" options={{ title: 'Cámara', drawerItemStyle: { display: 'none' } }} />
-      </Drawer>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <DrawerNavigator />
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  bootContainer: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  logo: {
-    width: 180,
-    height: 180,
-    marginBottom: 18,
-  },
-  bootTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#0891b2',
-    marginBottom: 16,
-  },
-  loader: {
-    marginTop: 10,
-  },
-  drawerContentScrollView: {
-    paddingTop: 12,
-    flexGrow: 1,
-  },
-  drawerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  drawerLogo: {
-    width: 38,
-    height: 38,
-  },
-  drawerAppName: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0891b2',
-  },
-  drawerAppSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  drawerDivider: {
-    height: 1,
-    backgroundColor: '#d0f2ff',
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  drawerSectionTitle: {
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 4,
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0891b2',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  drawerAccountSection: {
-    marginTop: 'auto',
-  },
-  drawerSectionDivider: {
-    height: 1,
-    backgroundColor: '#e2e8f0',
-    marginHorizontal: 16,
-    marginVertical: 10,
-  },
-  drawerItem: {
-    marginHorizontal: 8,
-    borderRadius: 10,
-  },
-  drawerHeaderSpacer: {
-    height: 12,
-  },
+  bootContainer: { flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  logo: { width: 180, height: 180, marginBottom: 18 },
+  bootTitle: { fontSize: 28, fontWeight: '700', color: '#0891b2', marginBottom: 16 },
+  loader: { marginTop: 10 },
+  drawerContentScrollView: { paddingTop: 12, flexGrow: 1 },
+  drawerHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 20, paddingBottom: 12, gap: 12 },
+  drawerLogo: { width: 38, height: 38 },
+  drawerAppName: { fontSize: 22, fontWeight: '800' },
+  drawerAppSubtitle: { fontSize: 12, color: '#64748b', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.8 },
+  drawerDivider: { height: 1, marginHorizontal: 16, marginBottom: 8 },
+  drawerSectionTitle: { marginHorizontal: 16, marginTop: 6, marginBottom: 4, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 },
+  drawerAccountSection: { marginTop: 'auto' },
+  drawerSectionDivider: { height: 1, marginHorizontal: 16, marginVertical: 10 },
+  drawerItem: { marginHorizontal: 8, borderRadius: 10 },
 });
