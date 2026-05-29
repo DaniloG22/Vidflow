@@ -1,183 +1,137 @@
 import { useEffect, useState } from 'react';
-import { View, Image, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeProvider, useTheme } from '../utils/theme';
 
+// 1. Menú lateral personalizado
 function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const chatItems = [
-    { name: 'index', title: 'Asistente', icon: 'chatbubbles-outline' },
-    { name: 'john', title: 'John', icon: 'person-outline' },
-    { name: 'laura', title: 'Laura', icon: 'person-outline' },
-    { name: 'camila', title: 'Camila', icon: 'person-outline' },
-  ];
-
-  const accountItems = [
-    { name: 'profile', title: 'Perfil', icon: 'person-circle-outline' },
-    { name: 'settings', title: 'Ajustes', icon: 'settings-outline' },
-  ];
-
+  const { theme } = useTheme();
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContentScrollView}>
-      <View style={styles.drawerHeader}>
-        <Image source={require('../assets/icono.png')} style={styles.drawerLogo} resizeMode="contain" />
-        <View>
-          <Text style={styles.drawerAppName}>VidFlow</Text>
-          <Text style={styles.drawerAppSubtitle}>Conversaciones</Text>
-        </View>
-      </View>
-
-      <View style={styles.drawerDivider} />
-
-      <Text style={styles.drawerSectionTitle}>Chats</Text>
-      {chatItems.map((item) => (
-        <DrawerItem
-          key={item.name}
-          label={item.title}
-          onPress={() => props.navigation.navigate(item.name)}
-          icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
-          style={styles.drawerItem}
-        />
-      ))}
-
-      <View style={styles.drawerAccountSection}>
-        <View style={styles.drawerSectionDivider} />
-
-        <Text style={styles.drawerSectionTitle}>Cuenta</Text>
-        {accountItems.map((item) => (
-          <DrawerItem
-            key={item.name}
-            label={item.title}
-            onPress={() => props.navigation.navigate(item.name)}
-            icon={({ color, size }) => <Ionicons name={item.icon as any} size={size} color={color} />}
-            style={styles.drawerItem}
-          />
-        ))}
-      </View>
+    <DrawerContentScrollView {...props} style={{ backgroundColor: theme.drawerBackground }}>
+      <DrawerItem
+        label="Asistente"
+        labelStyle={{ color: theme.text }}
+        onPress={() => props.navigation.navigate('index')}
+        icon={({ size }) => <Ionicons name="chatbubbles-outline" size={size} color="#0891b2" />}
+      />
+      <DrawerItem
+        label="Ajustes"
+        labelStyle={{ color: theme.text }}
+        onPress={() => props.navigation.navigate('settings')}
+        icon={({ size }) => <Ionicons name="settings-outline" size={size} color="#0891b2" />}
+      />
     </DrawerContentScrollView>
   );
 }
 
-export default function Layout() {
-  const [isBooting, setIsBooting] = useState(true);
+// 2. Navegador principal
+function DrawerNavigator() {
+  const { theme } = useTheme();
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [activeChatId, setActiveChatId] = useState('');
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsBooting(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isBooting) {
-    return (
-      <View style={styles.bootContainer}>
-        <Image source={require('../assets/logo-inicial.png')} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.bootTitle}>VidFlow</Text>
-        <ActivityIndicator size="large" color="#0891b2" style={styles.loader} />
-      </View>
+  const triggerHeaderClearChat = async (currentChatId: string) => {
+    Alert.alert(
+      "Eliminar Historial",
+      "¿Estás seguro de que quieres borrar todos los mensajes?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Eliminar", 
+          style: "destructive",
+          onPress: async () => {
+            await AsyncStorage.removeItem(`chat_messages_${currentChatId}`);
+            Alert.alert("Éxito", "Historial eliminado.");
+          }
+        }
+      ]
     );
-  }
+  };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
+      <Modal visible={menuVisible} transparent animationType="fade">
+        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }} />
+        </TouchableWithoutFeedback>
+        <View style={[styles.menuContainer, { backgroundColor: theme.drawerBackground }]}>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => {
+              setMenuVisible(false);
+              triggerHeaderClearChat(activeChatId);
+            }}
+          >
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            <Text style={{ color: '#ef4444', marginLeft: 10 }}>Eliminar chat</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       <Drawer
         drawerContent={(props) => <CustomDrawerContent {...props} />}
-        screenOptions={{
-          drawerStyle: { backgroundColor: '#ffffff', width: 250 },
+        // 🌟 CORRECCIÓN DE TIPO: sceneContainerStyle movido dentro de screenOptions
+        screenOptions={({ route }) => ({
+          sceneContainerStyle: { backgroundColor: theme.background },
+          headerShown: true,
+          headerStyle: { backgroundColor: theme.background },
           headerTintColor: '#0891b2',
-        }}
+          headerTitleStyle: { color: theme.text },
+          headerRight: () => {
+            if (['settings', 'gallery', 'profile', 'camera'].includes(route.name)) return null;
+            const chatId = route.name === 'index' ? 'chat_general' : `chat_${route.name}`;
+            
+            return (
+              <TouchableOpacity 
+                style={{ marginRight: 16 }} 
+                onPress={() => {
+                  setActiveChatId(chatId);
+                  setMenuVisible(true);
+                }}
+              >
+                <Ionicons name="ellipsis-vertical" size={24} color="#0891b2" />
+              </TouchableOpacity>
+            );
+          }
+        })}
       >
-        <Drawer.Screen name="index" options={{ title: 'Asistente', drawerIcon: () => <Ionicons name="chatbubbles-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="john" options={{ title: 'John', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="laura" options={{ title: 'Laura', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="camila" options={{ title: 'Camila', drawerIcon: () => <Ionicons name="person-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="profile" options={{ title: 'Perfil', drawerIcon: () => <Ionicons name="person-circle-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="settings" options={{ title: 'Ajustes', drawerIcon: () => <Ionicons name="settings-outline" size={22} color="#0891b2" /> }} />
-        <Drawer.Screen name="camera" options={{ title: 'Cámara', drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="index" options={{ title: 'Asistente' }} />
+        <Drawer.Screen name="settings" options={{ title: 'Ajustes' }} />
       </Drawer>
-    </GestureHandlerRootView>
+    </>
+  );
+}
+
+export default function Layout() {
+  return (
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <DrawerNavigator />
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  bootContainer: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+  menuContainer: {
+    position: 'absolute',
+    top: 60,
+    right: 15,
+    padding: 10,
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    width: 150,
   },
-  logo: {
-    width: 180,
-    height: 180,
-    marginBottom: 18,
-  },
-  bootTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#0891b2',
-    marginBottom: 16,
-  },
-  loader: {
-    marginTop: 10,
-  },
-  drawerContentScrollView: {
-    paddingTop: 12,
-    flexGrow: 1,
-  },
-  drawerHeader: {
+  menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    gap: 12,
-  },
-  drawerLogo: {
-    width: 38,
-    height: 38,
-  },
-  drawerAppName: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0891b2',
-  },
-  drawerAppSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  drawerDivider: {
-    height: 1,
-    backgroundColor: '#d0f2ff',
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  drawerSectionTitle: {
-    marginHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 4,
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0891b2',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  drawerAccountSection: {
-    marginTop: 'auto',
-  },
-  drawerSectionDivider: {
-    height: 1,
-    backgroundColor: '#e2e8f0',
-    marginHorizontal: 16,
-    marginVertical: 10,
-  },
-  drawerItem: {
-    marginHorizontal: 8,
-    borderRadius: 10,
-  },
-  drawerHeaderSpacer: {
-    height: 12,
-  },
+    padding: 10,
+  }
 });
